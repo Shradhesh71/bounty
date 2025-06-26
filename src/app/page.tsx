@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { ConnectBtn } from "@/components/connectButton";

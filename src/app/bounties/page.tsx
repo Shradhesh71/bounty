@@ -169,6 +169,9 @@ export default function BountiesPage() {
     contracts,
   });
 
+  console.log("bountiesData:", bountiesData);
+  console.log("bountyCountData:", bountyCountData);
+
   // Process the fetched bounty data and filter out settled bounties
   useEffect(() => {
     if (bountiesData) {
