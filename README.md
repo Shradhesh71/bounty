@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# On-Chain Bounty Board Frontend
 
-## Getting Started
+This repository contains the Next.js frontend for the On-Chain Bounty Board hackathon project. It provides a seamless UI for creators to post bounties, contributors to submit work, and admins to distribute prizes—all powered by x402pay and Coinbase CDP Wallet.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+* **Create Bounties**: Fill out a form to lock up USDC prizes and set entry fees, deadlines, and metadata.
+* **Approve USDC**: Integrated on-page ERC‑20 allowance flow with MetaMask via Wagmi’s `useWriteContract`.
+* **Pay & Submit**: Contributors pay entry fees with x402pay and submit IPFS CIDs on-chain.
+* **Real‑Time Status**: Wagmi `useContractRead` hooks keep UI synced with on-chain data.
+* **Wallet Integration**: RainbowKit + Wagmi for secure wallet connections and transactions.
+
+## 📁 Folder Structure
+
+```
+src/
+├── app/                  # Next.js App Router pages
+│   ├── create/           # Create bounty page (page.tsx)
+│   └── index/            # List & details pages
+├── components/           # Reusable UI components
+├── context/              # React contexts: Wagmi, Contracts, CDPWallet, X402Pay
+├── hooks/                # Custom hooks for reads & writes
+├── lib/                  # Constants & ABIs
+│   └── constants.ts      # Addresses & minimal ERC20 ABI
+└── styles/               # Global CSS
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repo**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   git clone https://github.com/your-org/bounty-ui.git
+   cd bounty-ui
+   ```
 
-## Learn More
+2. **Install dependencies**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Configure environment**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   * Rename `.env.example` to `.env.local` and set:
 
-## Deploy on Vercel
+     ```env
+     NEXT_PUBLIC_BOUNTY_AGENT_ADDRESS=0xYourDeployedAgentAddress
+     NEXT_PUBLIC_USDC_ADDRESS=0xYourUSDCSepoliaAddress
+     ```
+   * In `src/lib/constants.ts`, ensure:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+     ```ts
+     export const BOUNTY_AGENT_ADDRESS = process.env.NEXT_PUBLIC_BOUNTY_AGENT_ADDRESS!;
+     export const USDC_ADDRESS        = process.env.NEXT_PUBLIC_USDC_ADDRESS!;
+     export const USDC_ABI = [
+       'function allowance(address owner, address spender) view returns (uint256)',
+       'function approve(address spender, uint256 amount) returns (bool)',
+     ];
+     ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. **Open in browser**
+
+   Visit `http://localhost:3000` and connect your wallet via the RainbowKit button.
+
+## 🔗 Key Integrations
+
+* **Wagmi & RainbowKit** for wallet connection, on-chain reads, and writes.
+* **x402pay widget** loaded as a React context to collect entry fees off-chain for USDC.
+* **Coinbase CDP Wallet + AgentKit** context prepared (see `/context/CDPWallet.tsx`) for future agent automation flows.
+
+## 📄 How It Works
+
+1. **Creator Flow** (`/create`):
+
+   * Enter prize, entry fee, max winners, deadline, topic, and description.
+   * Approve USDC allowance for the bounty contract.
+   * Submit to lock funds on‑chain and emit `BountyCreated`.
+
+2. **Contributor Flow** (`/[bountyId]`):
+
+   * View bounty details and entry fee.
+   * Pay entry fee via x402pay.
+   * Submit work (IPFS CID) on‑chain using `submitWork`.
+
+3. **Admin Flow**:
+
+   * After deadline, creator calls `distributePrizes` to pay winners, refund non‑winners, and mint NFT proofs.
+
+## 🛠️ Customization
+
+* **USDC Decimals**: Currently set to 6 decimals via `parseUnits(value, 6)`. Adjust if using different tokens.
+* **Chains**: Default is Sepolia. Update `context/Wagmi.tsx` to add other chains.
+* **Theme**: Customize RainbowKit theme in `context/Wagmi.tsx`.
